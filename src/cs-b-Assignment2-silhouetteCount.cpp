@@ -8,52 +8,49 @@
 #include "gobjects.h"
 using namespace std;
 
-struct myPoint{
+struct MyPoint{
     bool color = false;
-    bool isVisite = false;
+    bool visited = false;
     int x = 0;
     int y = 0;
 };
 
-class myGrid {
+class PointGrid {
 private:
-    int gridHeight=0;
-    int gridWidth=0;
-    myPoint **data;
+    int width=0;
+    int height=0;
+    MyPoint *data;
 public:
 
-    myGrid(int x, int y) {
-        gridHeight = x-1;
-        gridWidth = y-1;
-        data = new myPoint*[x];
-        for (int i = 0; i < x; ++i)
-            data[i] = new myPoint[y];
-
+    PointGrid(int width, int height) {
+        this->width = width;
+        this->height = height;
+        data = new MyPoint[width * height]();
     }
 
-    int get_gridHeight(){return gridHeight;}
-    int get_gridWidth(){return gridWidth;}
-    myPoint get_Point(int x, int y){
-        return data[x][y];
-    }
-    bool get_color(int x, int y) {return data[x][y].color;}
-    bool get_visited(int x, int y) {return data[x][y].isVisite;}
-    void set_color(int x, int y, bool z) {data[x][y].color = z;}
-    void set_visited(int x, int y, bool z) {data[x][y].isVisite = z;}
-    void set_coordinate(int x, int y){
-        data[x][y].x = x;
-        data[x][y].y = y;
-    }
-    ~myGrid(){
-        for (int i=0; i < gridHeight; i++){
-            delete[] data[i];
-        }
+    ~PointGrid(){
         delete[] data;
     }
+
+    int get_gridHeight(){return width;}
+    int get_gridWidth(){return height;}
+    MyPoint& get_Point(int x, int y){
+        return data[y * width + x];
+    }
+    bool get_color(int x, int y) {return get_Point(x, y).color;}
+    bool get_visited(int x, int y) {return get_Point(x, y).visited;}
+    void set_color(int x, int y, bool z) { get_Point(x, y).color = z;}
+    void set_visited(int x, int y, bool z) { get_Point(x, y).visited = z;}
+    void set_coordinate(int x, int y){
+        MyPoint& point = get_Point(x, y);
+        point.x = x;
+        point.y = y;
+    }
+
 };
 
 
-void binaringImageToGrid(GBufferedImage* img, myGrid &imageBinaring){
+void binaringImageToGrid(GBufferedImage* img, PointGrid &imageBinaring){
     int imgHaight = img->getHeight();
     int imgWidth = img->getWidth();
     int pixelColorRGB = 0;
@@ -76,7 +73,7 @@ void binaringImageToGrid(GBufferedImage* img, myGrid &imageBinaring){
     }
 }
 
-void selectOnePoint(int x, int y, myGrid &imageBinaring, Queue<myPoint> &findePoint){
+void selectOnePoint(int x, int y, PointGrid &imageBinaring, Queue<MyPoint> &findePoint){
     if (y >= imageBinaring.get_gridWidth()) return;
     if (x >= imageBinaring.get_gridHeight()) return;
     if (x < 0) return;
@@ -96,11 +93,11 @@ bool getSilhouetteIsValid(int xLength,
 }
 void selectFindeArea(int x,
                      int y,
-                     myGrid &imageBinaring,
+                     PointGrid &imageBinaring,
                      bool &silhouetteIsValid){
 
-    Queue<myPoint> findePoint;
-    myPoint tempPoint;
+    Queue<MyPoint> findePoint;
+    MyPoint tempPoint;
     int xMin, xMax, yMin, yMax;
     xMin = xMax = x;
     yMin = yMax = y;
@@ -144,7 +141,7 @@ void silhouetteCount(string nameImageFile){
     GWindow gw(imgWidth, imgHaight);
     gw.add(imageFile);
 
-    myGrid imageBinaring(imgHaight, imgWidth);
+    PointGrid imageBinaring(imgHaight, imgWidth);
 
     binaringImageToGrid(imgageInBuffer, imageBinaring);
     bool silhouetteIsValid = false;
